@@ -155,20 +155,15 @@ class KMPeer:
                 self.connected = True
                 print(f"Connected to peer at {remote_ip}:{port}")
 
-                # 클라이언트 역할: 초기 제어권 보유 (양쪽 모두 초기에 제어 가능)
-                self.has_control = True
+                # 클라이언트 역할: 초기 제어권 없음 (Server만 제어 가능)
+                self.has_control = False
 
                 if self.on_connection_changed:
                     self.on_connection_changed(True)
                 if self.on_control_changed:
-                    self.on_control_changed(True)
+                    self.on_control_changed(False)
 
-                # 리스너 시작 (양쪽 모두 입력 가능)
-                self._start_listeners()
-
-                # 초기 연결 시 쿨다운 설정 (즉시 경계 감지 방지)
-                self.last_transfer_time = time.time()
-
+                # 클라이언트는 리스너를 시작하지 않음 (제어권이 없으므로)
                 self._start_receive_loop()
                 break
 
