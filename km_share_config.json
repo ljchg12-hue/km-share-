@@ -1,0 +1,29 @@
+{
+  "local": {
+    "name": "leejc5147-MS-7E32",
+    "os": "Linux",
+    "screen_width": 2560,
+    "screen_height": 1440
+  },
+  "remote": {
+    "ip": "192.168.0.13",
+    "port": 12345,
+    "name": "leejc5147-MS-7E32",
+    "os": "Linux",
+    "screen_width": 2560,
+    "screen_height": 1440
+  },
+  "layout": {
+    "position": "right"
+  },
+  "features": {
+    "edge_detection": true,
+    "auto_switch": true,
+    "hide_cursor": true,
+    "share_clipboard": false
+  },
+  "network": {
+    "discovery_enabled": true,
+    "port": 12345
+  }
+}

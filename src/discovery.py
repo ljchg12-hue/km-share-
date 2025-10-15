@@ -16,6 +16,29 @@ class NetworkDiscovery:
         self.running = False
         self.listen_thread = None
         self.callbacks: List[Callable] = []
+        self.local_ips = self._get_local_ips()
+
+    def _get_local_ips(self) -> List[str]:
+        """로컬 IP 주소 목록 가져오기"""
+        local_ips = ['127.0.0.1']
+        try:
+            # 모든 네트워크 인터페이스의 IP 가져오기
+            hostname = socket.gethostname()
+            local_ips.append(socket.gethostbyname(hostname))
+
+            # 추가로 모든 인터페이스 확인
+            import netifaces
+            for iface in netifaces.interfaces():
+                addrs = netifaces.ifaddresses(iface)
+                if netifaces.AF_INET in addrs:
+                    for addr in addrs[netifaces.AF_INET]:
+                        ip = addr.get('addr')
+                        if ip and ip not in local_ips:
+                            local_ips.append(ip)
+        except:
+            pass
+
+        return local_ips
 
     def add_callback(self, callback: Callable):
         """새 peer 발견시 호출될 콜백 추가"""
@@ -50,6 +73,11 @@ class NetworkDiscovery:
 
                 if message.get('magic') == self.MAGIC_STRING:
                     peer_ip = addr[0]
+
+                    # 자기 자신의 IP는 무시
+                    if peer_ip in self.local_ips:
+                        continue
+
                     peer_info = {
                         'name': message.get('name', 'Unknown'),
                         'os': message.get('os', 'Unknown'),

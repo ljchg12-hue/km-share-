@@ -12,8 +12,8 @@ class KMShareGUI:
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("KM-Share - Keyboard & Mouse Sharing")
-        self.root.geometry("700x600")
-        self.root.resizable(False, False)
+        self.root.geometry("750x750")
+        self.root.resizable(True, True)
 
         # 설정 관리자
         self.config = ConfigManager()
