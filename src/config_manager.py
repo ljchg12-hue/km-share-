@@ -67,15 +67,25 @@ class ConfigManager:
 
     @staticmethod
     def get_screen_info() -> Dict[str, int]:
-        """현재 화면 정보 가져오기"""
+        """현재 화면 정보 가져오기 (전체 가상 화면 크기)"""
         try:
             monitors = get_monitors()
             if monitors:
-                # 주 모니터 선택 (첫 번째)
-                monitor = monitors[0]
+                # 전체 가상 화면 크기 계산 (멀티 모니터 지원)
+                max_x = max(m.x + m.width for m in monitors)
+                max_y = max(m.y + m.height for m in monitors)
+                min_x = min(m.x for m in monitors)
+                min_y = min(m.y for m in monitors)
+
+                total_width = max_x - min_x
+                total_height = max_y - min_y
+
+                print(f"Detected {len(monitors)} monitor(s)")
+                print(f"Total virtual screen: {total_width}x{total_height}")
+
                 return {
-                    'width': monitor.width,
-                    'height': monitor.height
+                    'width': total_width,
+                    'height': total_height
                 }
         except Exception as e:
             print(f"Failed to get screen info: {e}")
