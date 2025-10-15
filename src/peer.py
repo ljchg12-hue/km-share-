@@ -22,8 +22,15 @@ class KMPeer:
         self.has_control = True  # 시작시 로컬이 제어권 보유
 
         # 마우스/키보드 컨트롤러
-        self.mouse_controller = mouse.Controller()
-        self.keyboard_controller = keyboard.Controller()
+        try:
+            self.mouse_controller = mouse.Controller()
+            self.keyboard_controller = keyboard.Controller()
+            print("Mouse and keyboard controllers initialized")
+        except Exception as e:
+            print(f"Failed to initialize controllers: {e}")
+            print("This may be a permission issue. The application may not work properly.")
+            self.mouse_controller = None
+            self.keyboard_controller = None
 
         # 리스너
         self.mouse_listener = None
@@ -210,10 +217,11 @@ class KMPeer:
             if self.has_control:
                 cursor_x = event.get('cursor_x', 0)
                 cursor_y = event.get('cursor_y', 0)
-                try:
-                    self.mouse_controller.position = (cursor_x, cursor_y)
-                except:
-                    pass
+                if self.mouse_controller:
+                    try:
+                        self.mouse_controller.position = (cursor_x, cursor_y)
+                    except Exception as e:
+                        print(f"Failed to set cursor position: {e}")
                 self._start_listeners()
                 print(f"Control received, cursor at ({cursor_x}, {cursor_y})")
             else:
@@ -227,57 +235,80 @@ class KMPeer:
         # 제어권이 없을 때만 원격 입력을 처리
         if not self.has_control:
             if event_type == 'mouse_move':
-                # 원격 좌표를 로컬 좌표로 변환
-                x, y = self._remote_to_local_coords(event['x'], event['y'])
-                self.mouse_controller.position = (x, y)
+                if self.mouse_controller:
+                    # 원격 좌표를 로컬 좌표로 변환
+                    x, y = self._remote_to_local_coords(event['x'], event['y'])
+                    try:
+                        self.mouse_controller.position = (x, y)
+                    except Exception as e:
+                        print(f"Failed to move mouse: {e}")
 
             elif event_type == 'mouse_button':
-                button_map = {
-                    'Button.left': mouse.Button.left,
-                    'Button.right': mouse.Button.right,
-                    'Button.middle': mouse.Button.middle,
-                }
-                button = button_map.get(event['button'])
-                if button:
-                    if event['pressed']:
-                        self.mouse_controller.press(button)
-                    else:
-                        self.mouse_controller.release(button)
+                if self.mouse_controller:
+                    button_map = {
+                        'Button.left': mouse.Button.left,
+                        'Button.right': mouse.Button.right,
+                        'Button.middle': mouse.Button.middle,
+                    }
+                    button = button_map.get(event['button'])
+                    if button:
+                        try:
+                            if event['pressed']:
+                                self.mouse_controller.press(button)
+                            else:
+                                self.mouse_controller.release(button)
+                        except Exception as e:
+                            print(f"Failed to handle mouse button: {e}")
 
             elif event_type == 'mouse_scroll':
-                self.mouse_controller.scroll(event['dx'], event['dy'])
+                if self.mouse_controller:
+                    try:
+                        self.mouse_controller.scroll(event['dx'], event['dy'])
+                    except Exception as e:
+                        print(f"Failed to scroll: {e}")
 
             elif event_type == 'keyboard':
-                key_str = event['key']
-                key = None
-                if 'Key.' in key_str:
-                    key = getattr(keyboard.Key, key_str.split('.')[-1], None)
-                else:
-                    key = key_str
-
-                if key:
-                    if event['pressed']:
-                        self.keyboard_controller.press(key)
+                if self.keyboard_controller:
+                    key_str = event['key']
+                    key = None
+                    if 'Key.' in key_str:
+                        key = getattr(keyboard.Key, key_str.split('.')[-1], None)
                     else:
-                        self.keyboard_controller.release(key)
+                        key = key_str
+
+                    if key:
+                        try:
+                            if event['pressed']:
+                                self.keyboard_controller.press(key)
+                            else:
+                                self.keyboard_controller.release(key)
+                        except Exception as e:
+                            print(f"Failed to handle keyboard: {e}")
 
     def _start_listeners(self):
         """마우스/키보드 리스너 시작"""
         if self.mouse_listener or self.keyboard_listener:
             return
 
-        self.mouse_listener = mouse.Listener(
-            on_move=self._on_move,
-            on_click=self._on_click,
-            on_scroll=self._on_scroll
-        )
-        self.keyboard_listener = keyboard.Listener(
-            on_press=self._on_press,
-            on_release=self._on_release
-        )
+        try:
+            self.mouse_listener = mouse.Listener(
+                on_move=self._on_move,
+                on_click=self._on_click,
+                on_scroll=self._on_scroll
+            )
+            self.keyboard_listener = keyboard.Listener(
+                on_press=self._on_press,
+                on_release=self._on_release
+            )
 
-        self.mouse_listener.start()
-        self.keyboard_listener.start()
+            self.mouse_listener.start()
+            self.keyboard_listener.start()
+            print("Listeners started successfully")
+        except Exception as e:
+            print(f"Failed to start listeners: {e}")
+            print("This may be a permission issue. Try running with sudo or check X11 access.")
+            self.mouse_listener = None
+            self.keyboard_listener = None
 
     def _stop_listeners(self):
         """마우스/키보드 리스너 중지"""
