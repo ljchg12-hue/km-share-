@@ -155,7 +155,13 @@ class KMShareGUI:
 
     def _load_config_to_gui(self):
         """설정을 GUI에 로드"""
+        # 로컬 정보를 자동으로 갱신
+        import platform
+        self.config.set('local.name', platform.node())
+        self.config.set('local.os', platform.system())
         self.config.update_local_screen_info()
+
+        # GUI에 표시
         self.local_name_var.set(self.config.get('local.name', ''))
         self.local_os_var.set(self.config.get('local.os', ''))
         self.local_screen_var.set(
