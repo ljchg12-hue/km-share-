@@ -220,6 +220,7 @@ class KMPeer:
                 if self.mouse_controller:
                     try:
                         self.mouse_controller.position = (cursor_x, cursor_y)
+                        time.sleep(0.1)  # 짧은 지연으로 위치 안정화
                     except Exception as e:
                         print(f"Failed to set cursor position: {e}")
                 self._start_listeners()
@@ -313,11 +314,19 @@ class KMPeer:
     def _stop_listeners(self):
         """마우스/키보드 리스너 중지"""
         if self.mouse_listener:
-            self.mouse_listener.stop()
+            try:
+                self.mouse_listener.stop()
+                print("Mouse listener stopped")
+            except Exception as e:
+                print(f"Error stopping mouse listener: {e}")
             self.mouse_listener = None
 
         if self.keyboard_listener:
-            self.keyboard_listener.stop()
+            try:
+                self.keyboard_listener.stop()
+                print("Keyboard listener stopped")
+            except Exception as e:
+                print(f"Error stopping keyboard listener: {e}")
             self.keyboard_listener = None
 
     def _on_move(self, x, y):
