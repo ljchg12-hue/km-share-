@@ -97,8 +97,15 @@ class KMPeer:
                         print(f"Peer connected from {addr}")
                         self.socket = client_socket
                         self.connected = True
+
+                        # 서버 역할: 초기 제어권 보유
+                        self.has_control = True
+
                         if self.on_connection_changed:
                             self.on_connection_changed(True)
+                        if self.on_control_changed:
+                            self.on_control_changed(True)
+
                         self._start_listeners()
                         self._start_receive_loop()
                     else:
@@ -134,10 +141,15 @@ class KMPeer:
                 self.connected = True
                 print(f"Connected to peer at {remote_ip}:{port}")
 
+                # 클라이언트 역할: 초기 제어권 없음
+                self.has_control = False
+
                 if self.on_connection_changed:
                     self.on_connection_changed(True)
+                if self.on_control_changed:
+                    self.on_control_changed(False)
 
-                self._start_listeners()
+                # 클라이언트는 리스너를 시작하지 않음 (제어권이 없으므로)
                 self._start_receive_loop()
                 break
 
@@ -187,10 +199,20 @@ class KMPeer:
         # 제어권 전환 이벤트
         if event_type == 'control_transfer':
             self.has_control = event.get('give_control', False)
+
+            # 제어권을 받을 때 마우스 위치 설정
             if self.has_control:
+                cursor_x = event.get('cursor_x', 0)
+                cursor_y = event.get('cursor_y', 0)
+                try:
+                    self.mouse_controller.position = (cursor_x, cursor_y)
+                except:
+                    pass
                 self._start_listeners()
+                print(f"Control received, cursor at ({cursor_x}, {cursor_y})")
             else:
                 self._stop_listeners()
+                print("Control released")
 
             if self.on_control_changed:
                 self.on_control_changed(self.has_control)
