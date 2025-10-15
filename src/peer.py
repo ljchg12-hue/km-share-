@@ -343,15 +343,19 @@ class KMPeer:
 
     def _check_edge_trigger(self, x, y) -> bool:
         """화면 경계 도달 여부 확인"""
-        threshold = 5  # 경계로부터 몇 픽셀 이내
+        threshold = 2  # 경계로부터 몇 픽셀 이내
 
         if self.layout_position == 'right':
+            # 오른쪽 경계 또는 오른쪽을 벗어남
             return x >= self.local_width - threshold
         elif self.layout_position == 'left':
+            # 왼쪽 경계 또는 왼쪽을 벗어남 (음수 포함)
             return x <= threshold
         elif self.layout_position == 'bottom':
+            # 아래쪽 경계 또는 아래쪽을 벗어남
             return y >= self.local_height - threshold
         elif self.layout_position == 'top':
+            # 위쪽 경계 또는 위쪽을 벗어남 (음수 포함)
             return y <= threshold
 
         return False
@@ -380,18 +384,30 @@ class KMPeer:
 
     def _local_to_remote_coords(self, x, y):
         """로컬 좌표를 원격 좌표로 변환"""
+        # 좌표를 화면 범위 내로 정규화
+        x = max(0, min(x, self.local_width - 1))
+        y = max(0, min(y, self.local_height - 1))
+
         if self.layout_position == 'right':
-            # 오른쪽 화면으로 넘어갈 때
-            return (0, int(y * self.remote_height / self.local_height))
+            # 오른쪽 화면으로 넘어갈 때 → 원격 화면 왼쪽 끝
+            remote_x = 5  # 약간 안쪽으로
+            remote_y = int(y * self.remote_height / self.local_height)
+            return (remote_x, remote_y)
         elif self.layout_position == 'left':
-            # 왼쪽 화면으로 넘어갈 때
-            return (self.remote_width - 1, int(y * self.remote_height / self.local_height))
+            # 왼쪽 화면으로 넘어갈 때 → 원격 화면 오른쪽 끝
+            remote_x = self.remote_width - 5  # 약간 안쪽으로
+            remote_y = int(y * self.remote_height / self.local_height)
+            return (remote_x, remote_y)
         elif self.layout_position == 'bottom':
-            # 아래쪽 화면으로 넘어갈 때
-            return (int(x * self.remote_width / self.local_width), 0)
+            # 아래쪽 화면으로 넘어갈 때 → 원격 화면 위쪽 끝
+            remote_x = int(x * self.remote_width / self.local_width)
+            remote_y = 5  # 약간 안쪽으로
+            return (remote_x, remote_y)
         elif self.layout_position == 'top':
-            # 위쪽 화면으로 넘어갈 때
-            return (int(x * self.remote_width / self.local_width), self.remote_height - 1)
+            # 위쪽 화면으로 넘어갈 때 → 원격 화면 아래쪽 끝
+            remote_x = int(x * self.remote_width / self.local_width)
+            remote_y = self.remote_height - 5  # 약간 안쪽으로
+            return (remote_x, remote_y)
 
         return (x, y)
 
