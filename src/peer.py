@@ -54,6 +54,9 @@ class KMPeer:
         # 마지막 마우스 위치
         self.last_mouse_pos = (0, 0)
 
+        # 제어권 전환 쿨다운
+        self.last_transfer_time = 0
+
     def start(self):
         """P2P 연결 시작"""
         if self.running:
@@ -391,7 +394,12 @@ class KMPeer:
 
     def _check_edge_trigger(self, x, y) -> bool:
         """화면 경계 도달 여부 확인"""
-        threshold = 2  # 경계로부터 몇 픽셀 이내
+        threshold = 20  # 경계로부터 몇 픽셀 이내 (증가)
+
+        # 쿨다운 체크 (0.5초 이내 재전환 방지)
+        current_time = time.time()
+        if current_time - self.last_transfer_time < 0.5:
+            return False
 
         if self.layout_position == 'right':
             # 오른쪽 경계 또는 오른쪽을 벗어남
@@ -411,6 +419,9 @@ class KMPeer:
     def _transfer_control_to_remote(self, x, y):
         """제어권을 원격으로 넘김"""
         print(f"Transferring control to remote at ({x}, {y})")
+
+        # 쿨다운 타이머 업데이트
+        self.last_transfer_time = time.time()
 
         # 원격 좌표 계산
         remote_x, remote_y = self._local_to_remote_coords(x, y)
@@ -438,23 +449,23 @@ class KMPeer:
 
         if self.layout_position == 'right':
             # 오른쪽 화면으로 넘어갈 때 → 원격 화면 왼쪽 끝
-            remote_x = 50  # 충분히 안쪽으로
+            remote_x = 150  # 충분히 안쪽으로 (증가)
             remote_y = int(y * self.remote_height / self.local_height)
             return (remote_x, remote_y)
         elif self.layout_position == 'left':
             # 왼쪽 화면으로 넘어갈 때 → 원격 화면 오른쪽 끝
-            remote_x = self.remote_width - 50  # 충분히 안쪽으로
+            remote_x = self.remote_width - 150  # 충분히 안쪽으로 (증가)
             remote_y = int(y * self.remote_height / self.local_height)
             return (remote_x, remote_y)
         elif self.layout_position == 'bottom':
             # 아래쪽 화면으로 넘어갈 때 → 원격 화면 위쪽 끝
             remote_x = int(x * self.remote_width / self.local_width)
-            remote_y = 50  # 충분히 안쪽으로
+            remote_y = 150  # 충분히 안쪽으로 (증가)
             return (remote_x, remote_y)
         elif self.layout_position == 'top':
             # 위쪽 화면으로 넘어갈 때 → 원격 화면 아래쪽 끝
             remote_x = int(x * self.remote_width / self.local_width)
-            remote_y = self.remote_height - 50  # 충분히 안쪽으로
+            remote_y = self.remote_height - 150  # 충분히 안쪽으로 (증가)
             return (remote_x, remote_y)
 
         return (x, y)
