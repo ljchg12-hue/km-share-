@@ -342,6 +342,10 @@ class KMPeer:
 
         self.last_mouse_pos = (x, y)
 
+        # 마우스 이동 이벤트 전송
+        event = {'type': 'mouse_move', 'x': x, 'y': y}
+        self._send_event(event)
+
     def _on_click(self, x, y, button, pressed):
         """마우스 클릭 이벤트"""
         if not self.has_control or not self.connected:
