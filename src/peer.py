@@ -433,23 +433,23 @@ class KMPeer:
 
         if self.layout_position == 'right':
             # 오른쪽 화면으로 넘어갈 때 → 원격 화면 왼쪽 끝
-            remote_x = 5  # 약간 안쪽으로
+            remote_x = 50  # 충분히 안쪽으로
             remote_y = int(y * self.remote_height / self.local_height)
             return (remote_x, remote_y)
         elif self.layout_position == 'left':
             # 왼쪽 화면으로 넘어갈 때 → 원격 화면 오른쪽 끝
-            remote_x = self.remote_width - 5  # 약간 안쪽으로
+            remote_x = self.remote_width - 50  # 충분히 안쪽으로
             remote_y = int(y * self.remote_height / self.local_height)
             return (remote_x, remote_y)
         elif self.layout_position == 'bottom':
             # 아래쪽 화면으로 넘어갈 때 → 원격 화면 위쪽 끝
             remote_x = int(x * self.remote_width / self.local_width)
-            remote_y = 5  # 약간 안쪽으로
+            remote_y = 50  # 충분히 안쪽으로
             return (remote_x, remote_y)
         elif self.layout_position == 'top':
             # 위쪽 화면으로 넘어갈 때 → 원격 화면 아래쪽 끝
             remote_x = int(x * self.remote_width / self.local_width)
-            remote_y = self.remote_height - 5  # 약간 안쪽으로
+            remote_y = self.remote_height - 50  # 충분히 안쪽으로
             return (remote_x, remote_y)
 
         return (x, y)
