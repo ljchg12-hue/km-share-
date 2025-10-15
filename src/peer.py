@@ -117,6 +117,10 @@ class KMPeer:
                             self.on_control_changed(True)
 
                         self._start_listeners()
+
+                        # 초기 연결 시 쿨다운 설정 (즉시 경계 감지 방지)
+                        self.last_transfer_time = time.time()
+
                         self._start_receive_loop()
                     else:
                         client_socket.close()  # 이미 연결된 경우 거부
@@ -161,6 +165,10 @@ class KMPeer:
 
                 # 리스너 시작 (양쪽 모두 입력 가능)
                 self._start_listeners()
+
+                # 초기 연결 시 쿨다운 설정 (즉시 경계 감지 방지)
+                self.last_transfer_time = time.time()
+
                 self._start_receive_loop()
                 break
 

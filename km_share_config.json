@@ -2,8 +2,8 @@
   "local": {
     "name": "leejc5147-MS-7E32",
     "os": "Linux",
-    "screen_width": 2560,
-    "screen_height": 1440
+    "screen_width": 4000,
+    "screen_height": 2560
   },
   "remote": {
     "ip": "192.168.0.13",
