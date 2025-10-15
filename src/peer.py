@@ -166,6 +166,12 @@ class KMPeer:
         """메시지 수신 루프"""
         buffer = b''
 
+        # 소켓 타임아웃 제거 (블로킹 모드)
+        try:
+            self.socket.settimeout(None)
+        except:
+            pass
+
         while self.running and self.connected:
             try:
                 data = self.socket.recv(1024)
@@ -285,19 +291,16 @@ class KMPeer:
 
     def _on_move(self, x, y):
         """마우스 이동 이벤트"""
-        self.last_mouse_pos = (x, y)
-
         if not self.has_control or not self.connected:
             return
 
-        # 화면 경계 감지
+        # 화면 경계 감지 (화면 밖 좌표도 체크)
         if self.config.get('features.edge_detection', True):
             if self._check_edge_trigger(x, y):
                 self._transfer_control_to_remote(x, y)
                 return
 
-        # 일반적인 마우스 이동은 전송하지 않음 (너무 많은 데이터)
-        # 필요시 throttling 추가 가능
+        self.last_mouse_pos = (x, y)
 
     def _on_click(self, x, y, button, pressed):
         """마우스 클릭 이벤트"""
